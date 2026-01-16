@@ -118,11 +118,11 @@ spec:
               value: {{.Values.env}}
             - name: REDIS_HOST
               value: {{ .Values.workerExecutor.redis.host }}
-            - name: GOLEM__COMPONENT_SERVICE__CONFIG__HOST
-              value: service-component-service-{{.Values.env}}
-            - name: GOLEM__COMPONENT_SERVICE__CONFIG__PORT
-              value: "{{ .Values.componentService.ports.grpc }}"
-            - name: GOLEM__COMPONENT_SERVICE__CONFIG__ACCESS_TOKEN
+            - name: GOLEM__REGISTRY_SERVICE__CONFIG__HOST
+              value: service-registry-service-{{.Values.env}}
+            - name: GOLEM__REGISTRY_SERVICE__CONFIG__PORT
+              value: "{{ .Values.registryService.ports.grpc }}"
+            - name: GOLEM__REGISTRY_SERVICE__CONFIG__ACCESS_TOKEN
               value: "2A354594-7A63-4091-A46B-CC58D379F677"
             - name: GOLEM__SHARD_MANAGER_SERVICE__CONFIG__HOST
               value: service-shard-manager-{{.Values.env}}
@@ -273,11 +273,11 @@ spec:
               value: service-shard-manager-{{.Values.env}}
             - name: GOLEM__ROUTING_TABLE__PORT
               value: "{{ .Values.shardManager.ports.grpc }}"
-            - name: GOLEM__COMPONENT_SERVICE__HOST
-              value: service-component-service-{{.Values.env}}
-            - name: GOLEM__COMPONENT_SERVICE__PORT
-              value: "{{ .Values.componentService.ports.grpc }}"
-            - name: GOLEM__COMPONENT_SERVICE__ACCESS_TOKEN
+            - name: GOLEM__REGISTRY_SERVICE__HOST
+              value: service-registry-service-{{.Values.env}}
+            - name: GOLEM__REGISTRY_SERVICE__PORT
+              value: "{{ .Values.registryService.ports.grpc }}"
+            - name: GOLEM__REGISTRY_SERVICE__ACCESS_TOKEN
               value: "2A354594-7A63-4091-A46B-CC58D379F677"
             - name: GOLEM__DB__TYPE
               value: "Postgres"
@@ -370,30 +370,30 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: deployment-component-service-{{.Values.env}}
+  name: deployment-registry-service-{{.Values.env}}
   labels:
     env: {{.Values.env}}
 spec:
-  replicas: {{ .Values.componentService.replica }}
+  replicas: {{ .Values.registryService.replica }}
   selector:
     matchLabels:
-      app: component-service-app-{{.Values.env}}
+      app: registry-service-app-{{.Values.env}}
   template:
     metadata:
       labels:
-        app: component-service-app-{{.Values.env}}
+        app: registry-service-app-{{.Values.env}}
         env: {{.Values.env}}
     spec:
 {{- if .Values.serviceAccountName }}
       serviceAccountName: {{ .Values.serviceAccountName }}
 {{- end }}
-{{- if .Values.componentService.nodeSelector }}
-      nodeSelector: {{- .Values.componentService.nodeSelector | toYaml | nindent 8 }}
+{{- if .Values.registryService.nodeSelector }}
+      nodeSelector: {{- .Values.registryService.nodeSelector | toYaml | nindent 8 }}
 {{- end }}
       containers:
-        - name: component-service-app-{{.Values.env}}
-          image: "{{ .Values.componentService.image }}"
-          imagePullPolicy: {{.Values.componentService.imagePullPolicy}}
+        - name: registry-service-app-{{.Values.env}}
+          image: "{{ .Values.registryService.image }}"
+          imagePullPolicy: {{.Values.registryService.imagePullPolicy}}
           env:
             - name: ENVIRONMENT
               value: {{.Values.env}}
@@ -408,15 +408,15 @@ spec:
             - name: GOLEM__DB__CONFIG__MAX_CONNECTIONS
               value: "10"
             - name: GOLEM__DB__CONFIG__DATABASE
-              value: {{ .Values.componentService.postgres.database }}
+              value: {{ .Values.registryService.postgres.database }}
             - name: GOLEM__DB__CONFIG__SCHEMA
-              value: {{ .Values.componentService.postgres.schema }}
+              value: {{ .Values.registryService.postgres.schema }}
             - name: GOLEM__DB__CONFIG__HOST
-              value: {{ .Values.componentService.postgres.host }}
+              value: {{ .Values.registryService.postgres.host }}
             - name: GOLEM__DB__CONFIG__PORT
-              value: "{{ .Values.componentService.postgres.port }}"
+              value: "{{ .Values.registryService.postgres.port }}"
             - name: GOLEM__DB__CONFIG__USERNAME
-              value: {{ .Values.componentService.postgres.username }}
+              value: {{ .Values.registryService.postgres.username }}
             - name: GOLEM__COMPILATION__TYPE
               value: "Enabled"
             - name: GOLEM__COMPILATION__CONFIG__HOST
@@ -424,21 +424,21 @@ spec:
             - name: GOLEM__COMPILATION__CONFIG__PORT
               value: "{{.Values.componentCompilationService.ports.grpc}}"
 
-{{- if eq .Values.componentService.postgres.password.type "plain" }}
+{{- if eq .Values.registryService.postgres.password.type "plain" }}
             - name: GOLEM__DB__CONFIG__PASSWORD
-              value: "{{ .Values.componentService.postgres.password.plain }}"
+              value: "{{ .Values.registryService.postgres.password.plain }}"
 {{- end }}
-{{- if eq .Values.componentService.postgres.password.type "secret" }}
+{{- if eq .Values.registryService.postgres.password.type "secret" }}
             - name: GOLEM__DB__CONFIG__PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Values.componentService.postgres.password.secret.name }}
-                  key: {{ .Values.componentService.postgres.password.secret.key }}
+                  name: {{ .Values.registryService.postgres.password.secret.name }}
+                  key: {{ .Values.registryService.postgres.password.secret.key }}
 {{- end }}
             - name: GOLEM__HTTP_PORT
-              value: "{{ .Values.componentService.ports.http }}"
+              value: "{{ .Values.registryService.ports.http }}"
             - name: GOLEM__GRPC_PORT
-              value: "{{ .Values.componentService.ports.grpc }}"
+              value: "{{ .Values.registryService.ports.grpc }}"
 {{- if eq .Values.componentStore.type "pvc" }}
             - name: GOLEM__COMPONENT_STORE__TYPE
               value: "Local"
@@ -456,12 +456,18 @@ spec:
               value: {{ .Values.componentStore.s3.objectPrefix }}
             - name: GOLEM__COMPONENT_STORE__CONFIG__BUCKET_NAME
               value: {{ .Values.componentStore.s3.bucket }}
+            - name: GOLEM__BLOB_STORAGE__CONFIG__USE_MINIO_CREDENTIALS
+              value: {{ .Values.componentStore.s3.useMinioCredentials }}
+{{- end }}
+{{- if and (eq .Values.componentStore.type "s3") .Values.componentStore.s3.awsEndpointUrl }}
+            - name: GOLEM__BLOB_STORAGE__CONFIG__AWS_ENDPOINT_URL
+              value: {{ .Values.componentStore.s3.awsEndpointUrl }}
 {{- end }}
           ports:
             - name: http
-              containerPort: {{ .Values.componentService.ports.http }}
+              containerPort: {{ .Values.registryService.ports.http }}
             - name: grpc
-              containerPort: {{ .Values.componentService.ports.grpc }}
+              containerPort: {{ .Values.registryService.ports.grpc }}
           livenessProbe:
             httpGet:
               path: "/healthcheck"
@@ -520,13 +526,13 @@ spec:
           env:
             - name: ENVIRONMENT
               value: {{.Values.env}}
-            - name: GOLEM__COMPONENT_SERVICE__TYPE
+            - name: GOLEM__REGISTRY_SERVICE__TYPE
               value: Static
-            - name: GOLEM__COMPONENT_SERVICE__CONFIG__HOST
-              value: service-component-service-{{.Values.env}}
-            - name: GOLEM__COMPONENT_SERVICE__CONFIG__PORT
-              value: "{{ .Values.componentService.ports.grpc }}"
-            - name: GOLEM__COMPONENT_SERVICE__CONFIG__ACCESS_TOKEN
+            - name: GOLEM__REGISTRY_SERVICE__CONFIG__HOST
+              value: service-registry-service-{{.Values.env}}
+            - name: GOLEM__REGISTRY_SERVICE__CONFIG__PORT
+              value: "{{ .Values.registryService.ports.grpc }}"
+            - name: GOLEM__REGISTRY_SERVICE__CONFIG__ACCESS_TOKEN
               value: "2A354594-7A63-4091-A46B-CC58D379F677"
             - name: RUST_BACKTRACE
               value: "1"
@@ -561,6 +567,12 @@ spec:
               value: {{ .Values.workerExecutorStore.s3.oplogPayloadBucket }}
             - name: GOLEM__BLOB_STORAGE__CONFIG__COMPRESSED_OPLOG_BUCKETS
               value: "{{ .Values.workerExecutorStore.s3.compressedOplogBuckets }}"
+            - name: GOLEM__BLOB_STORAGE__CONFIG__USE_MINIO_CREDENTIALS
+              value: {{ .Values.workerExecutorStore.s3.useMinioCredentials }}
+{{- end }}
+{{- if and (eq .Values.workerExecutorStore.type "s3") .Values.workerExecutorStore.s3.awsEndpointUrl }}
+            - name: GOLEM__BLOB_STORAGE__CONFIG__AWS_ENDPOINT_URL
+              value: {{ .Values.workerExecutorStore.s3.awsEndpointUrl }}
 {{- end }}
           ports:
             - name: http
@@ -586,3 +598,91 @@ spec:
           persistentVolumeClaim:
             claimName: golem-worker-executor-store-{{.Values.env}}
 {{- end }}
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: golem-debugging-service-{{.Values.env}}
+  labels:
+    env: {{.Values.env}}
+spec:
+  replicas: {{ .Values.debuggingService.replica }}
+  selector:
+    matchLabels:
+      app: debugging-service-app-{{.Values.env}}
+  template:
+    metadata:
+      labels:
+        app: debugging-service-app-{{.Values.env}}
+        env: {{.Values.env}}
+    spec:
+      {{- if .Values.serviceAccountName }}
+      serviceAccountName: {{ .Values.serviceAccountName }}
+      {{- end }}
+      {{- if .Values.debuggingService.nodeSelector }}
+      nodeSelector: {{- .Values.debuggingService.nodeSelector | toYaml | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: debugging-service
+          image: {{ .Values.debuggingService.image }}
+          imagePullPolicy: {{ .Values.debuggingService.imagePullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.debuggingService.ports.http }}
+          env:
+            - name: RUST_BACKTRACE
+              value: "1"
+            - name: RUST_LOG
+              value: "info"
+            - name: GOLEM__HTTP_PORT
+              value: "{{ .Values.debuggingService.ports.http }}"
+            - name: GOLEM__PUBLIC_WORKER_API__HOST
+              value: service-worker-service-{{.Values.env}}
+            - name: GOLEM__PUBLIC_WORKER_API__PORT
+              value: "{{ .Values.workerService.ports.grpc }}"
+            - name: GOLEM__REGISTRY_SERVICE__CONFIG__HOST
+              value: service-registry-service-{{.Values.env}}
+            - name: GOLEM__REGISTRY_SERVICE__CONFIG__PORT
+              value: "{{ .Values.registryService.ports.grpc }}"
+            - name: GOLEM__KEY_VALUE_STORAGE__TYPE
+              value: "Redis"
+            - name: GOLEM__INDEXED_STORAGE__TYPE
+              value: "KVStoreRedis"
+            - name: GOLEM__KEY_VALUE_STORAGE__CONFIG__KEY_PREFIX
+              value: {{.Values.env}}
+            - name: GOLEM__KEY_VALUE_STORAGE__CONFIG__HOST
+              value: {{ .Values.debuggingService.redis.host }}
+            - name: GOLEM__KEY_VALUE_STORAGE__CONFIG__PORT
+              value: "{{ .Values.debuggingService.redis.port }}"
+            - name: GOLEM__KEY_VALUE_STORAGE__CONFIG__DATABASE
+              value: "{{ .Values.debuggingService.redis.database }}"
+{{- if .Values.debuggingService.redis.username }}
+            - name: GOLEM__KEY_VALUE_STORAGE__CONFIG__USERNAME
+              value: "{{ .Values.debuggingService.redis.username }}"
+{{- end }}
+{{- if eq .Values.debuggingService.redis.password.type "plain" }}
+            - name: GOLEM__KEY_VALUE_STORAGE__CONFIG__PASSWORD
+              value: "{{ .Values.debuggingService.redis.password.plain }}"
+{{- end }}
+{{- if eq .Values.debuggingService.redis.password.type "secret" }}
+            - name: GOLEM__KEY_VALUE_STORAGE__CONFIG__PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.debuggingService.redis.password.secret.name }}
+                  key: {{ .Values.debuggingService.redis.password.secret.key }}
+{{- end }}
+          livenessProbe:
+            httpGet:
+              path: "/healthcheck"
+              port: http
+            periodSeconds: 10
+            failureThreshold: 5
+            initialDelaySeconds: 45
+            timeoutSeconds: 2
+          readinessProbe:
+            httpGet:
+              path: /healthcheck
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5

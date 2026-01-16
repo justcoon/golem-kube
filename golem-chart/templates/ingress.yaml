@@ -13,13 +13,6 @@ spec:
   rules:
     - http:
         paths:
-          - path: "/v1/api"
-            pathType: ImplementationSpecific
-            backend:
-              service:
-                name: service-worker-service-{{.Values.env}}
-                port:
-                  number: {{ .Values.workerService.ports.http }}
           - path: "/v1/components/[^/]+/workers/[^/]+/connect$"
             pathType: ImplementationSpecific
             backend:
@@ -34,27 +27,20 @@ spec:
                 name: service-worker-service-{{.Values.env}}
                 port:
                   number: {{ .Values.workerService.ports.http }}
-          - path: "/v1/components/[^/]+/invoke$"
+          - path: "/v1/debugger"
             pathType: ImplementationSpecific
             backend:
               service:
-                name: service-worker-service-{{.Values.env}}
+                name: service-debugging-service-{{.Values.env}}
                 port:
-                  number: {{ .Values.workerService.ports.http }}
-          - path: "/v1/components/[^/]+/invoke-and-await$"
-            pathType: ImplementationSpecific
-            backend:
-              service:
-                name: service-worker-service-{{.Values.env}}
-                port:
-                  number: {{ .Values.workerService.ports.http }}
+                  number: {{ .Values.debuggingService.ports.http }}
           - path: /
             pathType: ImplementationSpecific
             backend:
               service:
-                name: service-component-service-{{.Values.env}}
+                name: service-registry-service-{{.Values.env}}
                 port:
-                  number: {{ .Values.componentService.ports.http }}
+                  number: {{ .Values.registryService.ports.http }}
 {{- end }}
 
 {{- if eq .Values.ingress.type "alb" }}
@@ -72,13 +58,6 @@ spec:
   rules:
     - http:
         paths:
-          - path: "/v1/api"
-            pathType: ImplementationSpecific
-            backend:
-              service:
-                name: service-worker-service-{{.Values.env}}
-                port:
-                  number: {{ .Values.workerService.ports.http }}
           - path: "/v1/components/*/workers/*/connect"
             pathType: ImplementationSpecific
             backend:
@@ -100,25 +79,18 @@ spec:
                 name: service-worker-service-{{.Values.env}}
                 port:
                   number: {{ .Values.workerService.ports.http }}
-          - path: "/v1/components/*/invoke"
+          - path: "/v1/debugger"
             pathType: ImplementationSpecific
             backend:
               service:
-                name: service-worker-service-{{.Values.env}}
+                name: service-debbuging-service-{{.Values.env}}
                 port:
-                  number: {{ .Values.workerService.ports.http }}
-          - path: "/v1/components/*/invoke-and-await"
-            pathType: ImplementationSpecific
-            backend:
-              service:
-                name: service-worker-service-{{.Values.env}}
-                port:
-                  number: {{ .Values.workerService.ports.http }}
+                  number: {{ .Values.debuggingService.ports.http }}
           - path: "/*"
             pathType: ImplementationSpecific
             backend:
               service:
-                name: service-component-service-{{.Values.env}}
+                name: service-registry-service-{{.Values.env}}
                 port:
-                  number: {{ .Values.componentService.ports.http }}
+                  number: {{ .Values.registryService.ports.http }}
 {{- end }}

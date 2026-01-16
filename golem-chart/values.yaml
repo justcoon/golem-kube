@@ -1,21 +1,19 @@
 # shard manager service configuration
 shardManager:
-  image: golemservices/golem-shard-manager:latest
+  image: golemservices/golem-shard-manager:${GOLEM_IMAGES_VERSION:-latest}
   imagePullPolicy: Always
   ports:
     http: 8081
     grpc: 9001
   service:
     type: ClusterIP
-  worker:
-    healthCheckType: "K8s"
   redis:
     port: 6379
-    host: golem-redis-master
+    host: redis
     username: ""
     database: 0
     password:
-      type: secret # secret or plain, or none if no auth
+      type: none # secret or plain, or none if no auth
       plain: ""
       secret: # password from kubernetes secret
         name: golem-redis
@@ -24,7 +22,7 @@ shardManager:
 
 # worker executor service configuration
 workerExecutor:
-  image: golemservices/golem-worker-executor:latest
+  image: golemservices/golem-worker-executor:${GOLEM_IMAGES_VERSION:-latest}
   imagePullPolicy: Always
   replica: 1
   ports:
@@ -47,7 +45,7 @@ workerExecutor:
 
 # worker service configuration
 workerService:
-  image: golemservices/golem-worker-service:latest
+  image: golemservices/golem-worker-service:${GOLEM_IMAGES_VERSION:-latest}
   imagePullPolicy: Always
   replica: 1
   ports:
@@ -55,67 +53,77 @@ workerService:
     requestHttp: 9006 # worker API Gateway
     grpc: 9007
   service:
-    type: LoadBalancer
-  postgres:
-    port: 5432
-    host: golem-postgres-postgresql
-    database: golem_db
-    username: golem_user
-    schema: golem_worker
-    password:
-      type: secret # secret or plain
-      plain: ""
-      secret: # password from kubernetes secret
-        name: golem-postgres-postgresql
-        key: password
+    type: ClusterIP
   redis:
     port: 6379
-    host: golem-redis-master
+    host: redis
     username: ""
     database: 0
     password:
-      type: secret # secret or plain, or none if no auth
+      type: none
       plain: ""
-      secret: # password from kubernetes secret
+      secret:
         name: golem-redis
         key: redis-password
-#  nodeSelector: # added, if defined, see: https://kubernetes.io/docs/tasks/configure-pod-container/assign-pods-nodes/
-
-# component service configuration
-componentService:
-  image: golemservices/golem-component-service:latest
-  imagePullPolicy: Always
-  replica: 1
-  ports:
-    http: 8083
-    grpc: 9090
-  service:
-    type: LoadBalancer
-  postgres:
-    port: 5432
-    host: golem-postgres-postgresql
-    database: golem_db
-    username: golem_user
-    schema: golem_component
-    password:
-      type: secret  # secret or plain
-      plain: ""
-      secret: # password from kubernetes secret
-        name: golem-postgres-postgresql
-        key: password
+  registryService:
+    host: golem-registry-service
+    port: 9001
+  shardManager:
+    host: golem-shard-manager
+    port: 9001
 #  nodeSelector: # added, if defined, see: https://kubernetes.io/docs/tasks/configure-pod-container/assign-pods-nodes/
 
 # component compilation service configuration
 componentCompilationService:
-  image: golemservices/golem-component-compilation-service:latest
+  image: golemservices/golem-component-compilation-service:${GOLEM_IMAGES_VERSION:-latest}
   imagePullPolicy: Always
   replica: 1
   ports:
     http: 8084
     grpc: 9091
   service:
-    type: LoadBalancer
+    type: ClusterIP
 #  nodeSelector: # added, if defined, see: https://kubernetes.io/docs/tasks/configure-pod-container/assign-pods-nodes/
+
+# registry service configuration
+registryService:
+  image: golemservices/registry-service:${GOLEM_IMAGES_VERSION:-latest}
+  imagePullPolicy: Always
+  replica: 1
+  ports:
+    http: 9000
+    grpc: 9001
+  service:
+    type: ClusterIP
+  postgres:
+    port: 5432
+    host: postgres
+    database: golem_db
+    username: golem_user
+    password:
+      type: plain
+      plain: "golem_password"
+
+# debugging service configuration
+debuggingService:
+  image: golemservices/golem-debugging-service:${GOLEM_IMAGES_VERSION:-latest}
+  imagePullPolicy: Always
+  replica: 1
+  ports:
+    http: 9002
+  service:
+    type: ClusterIP
+  redis:
+    port: 6379
+    host: redis
+    username: ""
+    database: 0
+    password:
+      type: none
+      plain: ""
+      secret:
+        name: golem-redis
+        key: redis-password
 
 # logging configuration - used in all services
 logging:
@@ -123,6 +131,12 @@ logging:
 
 # service account name  - used in all services, see: https://kubernetes.io/docs/concepts/security/service-accounts/
 serviceAccountName: golem-sa-default
+
+# environment variables for all services
+envVars:
+  GOLEM_IMAGES_VERSION: "latest"
+  ADMIN_TOKEN: ""
+  MARKETING_TOKEN: ""
 
 env: default
 
@@ -137,6 +151,8 @@ componentStore:
     objectPrefix: ""
     bucket: ""
     region: "us-east-1"
+    useMinioCredentials: false
+    awsEndpointUrl: ""
 
 # worker executor store configuration
 workerExecutorStore:
@@ -152,6 +168,8 @@ workerExecutorStore:
     customDataBucket: "custom-data"
     oplogPayloadBucket: "oplog-payload"
     compressedOplogBuckets: "[oplog-archive-1]"
+    useMinioCredentials: false
+    awsEndpointUrl: ""
 
 # API ingress
 ingress:

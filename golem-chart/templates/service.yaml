@@ -71,23 +71,23 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: service-component-service-{{.Values.env}}
+  name: service-registry-service-{{.Values.env}}
   labels:
-    app: component-service-app-{{.Values.env}}
+    app: registry-service-app-{{.Values.env}}
     env: {{.Values.env}}
 spec:
-  type: {{ .Values.componentService.service.type }}
+  type: {{ .Values.registryService.service.type }}
   selector:
-    app: component-service-app-{{.Values.env}}
+    app: registry-service-app-{{.Values.env}}
   ports:
     - protocol: TCP
       name: http
-      port: {{ .Values.componentService.ports.http }}
-      targetPort: {{ .Values.componentService.ports.http }}
+      port: {{ .Values.registryService.ports.http }}
+      targetPort: {{ .Values.registryService.ports.http }}
     - protocol: TCP
       name: grpc
-      port: {{ .Values.componentService.ports.grpc }}
-      targetPort: {{ .Values.componentService.ports.grpc }}
+      port: {{ .Values.registryService.ports.grpc }}
+      targetPort: {{ .Values.registryService.ports.grpc }}
 
 ---
 
@@ -111,3 +111,20 @@ spec:
       name: grpc
       port: {{ .Values.componentCompilationService.ports.grpc }}
       targetPort: {{ .Values.componentCompilationService.ports.grpc }}
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: golem-debugging-service-{{.Values.env}}
+  labels:
+    app: debugging-service-app-{{.Values.env}}
+spec:
+  type: {{ .Values.debuggingService.service.type }}
+  selector:
+    app: debugging-service-app-{{.Values.env}}
+  ports:
+    - name: http
+      port: {{ .Values.debuggingService.ports.http }}
+      targetPort: http
