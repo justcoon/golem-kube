@@ -25,7 +25,7 @@ spec:
 {{- end }}
       containers:
         - name: shard-manager-app-{{.Values.env}}
-          image: "{{ .Values.shardManager.image.name }}:{{ .Values.shardManager.image.version }}"
+          image: "{{ .Values.shardManager.image.name }}:{{ .Values.shardManager.image.tag }}"
           imagePullPolicy: {{.Values.shardManager.imagePullPolicy}}
           env:
             - name: ENVIRONMENT
@@ -63,7 +63,7 @@ spec:
               value: "{{ .Values.logging.json }}"
             - name: GOLEM__HTTP_PORT
               value: "{{ .Values.shardManager.ports.http }}"
-            - name: GOLEM_SHARD_MANAGER_PORT
+            - name: GOLEM__GRPC__PORT
               value: "{{ .Values.shardManager.ports.grpc }}"
             - name: GOLEM__HEALTH_CHECK__MODE__TYPE
               value: {{ .Values.shardManager.worker.healthCheckType }}
@@ -111,7 +111,7 @@ spec:
 {{- end }}
       containers:
         - name: worker-executor-app-{{.Values.env}}
-          image: "{{ .Values.workerExecutor.image.name }}:{{ .Values.workerExecutor.image.version }}"
+          image: "{{ .Values.workerExecutor.image.name }}:{{ .Values.workerExecutor.image.tag }}"
           imagePullPolicy: {{.Values.workerExecutor.imagePullPolicy}}
           env:
             - name: ENVIRONMENT
@@ -206,6 +206,24 @@ spec:
               value: {{ .Values.workerExecutorStore.s3.oplogPayloadBucket }}
             - name: GOLEM__BLOB_STORAGE__CONFIG__COMPRESSED_OPLOG_BUCKETS
               value: "{{ .Values.workerExecutorStore.s3.compressedOplogBuckets }}"
+            - name: GOLEM__BLOB_STORAGE__CONFIG__PLUGIN_WASM_FILES_BUCKET
+              value: "{{ .Values.workerExecutorStore.s3.pluginWasmFilesBucket }}"
+            - name: GOLEM__BLOB_STORAGE__CONFIG__INITIAL_COMPONENT_FILES_BUCKET
+              value: "{{ .Values.workerExecutorStore.s3.initialComponentsFilesBucket }}"
+            - name: GOLEM__BLOB_STORAGE__CONFIG__COMPONENTS_BUCKET
+              value: "{{ .Values.workerExecutorStore.s3.componentsBucket }}"
+            - name: GOLEM__BLOB_STORAGE__CONFIG__USE_MINIO_CREDENTIALS
+              value: "{{ .Values.workerExecutorStore.s3.useMinioCredentials }}"
+            - name: GOLEM__BLOB_STORAGE__CONFIG__RETRIES__MAX_ATTEMPTS
+              value: "3"
+            - name: GOLEM__BLOB_STORAGE__CONFIG__RETRIES__MAX_DELAY
+              value: "1s"
+            - name: GOLEM__BLOB_STORAGE__CONFIG__RETRIES__MAX_JITTER_FACTOR
+              value: "0.15"
+            - name: GOLEM__BLOB_STORAGE__CONFIG__RETRIES__MIN_DELAY
+              value: "100ms"
+            - name: GOLEM__BLOB_STORAGE__CONFIG__RETRIES__MULTIPLIER
+              value: "3.0"
 {{- end }}
             - name: POD_NAME
               valueFrom:
@@ -262,7 +280,7 @@ spec:
 {{- end }}
       containers:
         - name: worker-service-app-{{.Values.env}}
-          image: "{{ .Values.workerService.image.name }}:{{ .Values.workerService.image.version }}"
+          image: "{{ .Values.workerService.image.name }}:{{ .Values.workerService.image.tag }}"
           imagePullPolicy: {{.Values.workerService.imagePullPolicy}}
           env:
             - name: ENVIRONMENT
@@ -279,31 +297,6 @@ spec:
               value: "{{ .Values.registryService.ports.grpc }}"
             - name: GOLEM__REGISTRY_SERVICE__ACCESS_TOKEN
               value: "2A354594-7A63-4091-A46B-CC58D379F677"
-            - name: GOLEM__DB__TYPE
-              value: "Postgres"
-            - name: GOLEM__DB__CONFIG__MAX_CONNECTIONS
-              value: "10"
-            - name: GOLEM__DB__CONFIG__DATABASE
-              value: {{ .Values.workerService.postgres.database }}
-            - name: GOLEM__DB__CONFIG__SCHEMA
-              value: {{ .Values.workerService.postgres.schema }}
-            - name: GOLEM__DB__CONFIG__HOST
-              value: {{ .Values.workerService.postgres.host }}
-{{- if eq .Values.workerService.postgres.password.type "plain" }}
-            - name: GOLEM__DB__CONFIG__PASSWORD
-              value: "{{ .Values.workerService.postgres.password.plain }}"
-{{- end }}
-{{- if eq .Values.workerService.postgres.password.type "secret" }}
-            - name: GOLEM__DB__CONFIG__PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.workerService.postgres.password.secret.name }}
-                  key: {{ .Values.workerService.postgres.password.secret.key }}
-{{- end }}
-            - name: GOLEM__DB__CONFIG__PORT
-              value: "{{ .Values.workerService.postgres.port }}"
-            - name: GOLEM__DB__CONFIG__USERNAME
-              value: {{ .Values.workerService.postgres.username }}
             - name: GOLEM__GATEWAY_SESSION_STORAGE__TYPE
               value: "Redis"
             - name: GOLEM__GATEWAY_SESSION_STORAGE__CONFIG__HOST
@@ -392,7 +385,7 @@ spec:
 {{- end }}
       containers:
         - name: registry-service-app-{{.Values.env}}
-          image: "{{ .Values.registryService.image.name }}:{{ .Values.registryService.image.version }}"
+          image: "{{ .Values.registryService.image.name }}:{{ .Values.registryService.image.tag }}"
           imagePullPolicy: {{.Values.registryService.imagePullPolicy}}
           env:
             - name: ENVIRONMENT
@@ -447,30 +440,6 @@ spec:
               value: "{{ .Values.registryService.ports.http }}"
             - name: GOLEM__GRPC_PORT
               value: "{{ .Values.registryService.ports.grpc }}"
-{{- if eq .Values.componentStore.type "pvc" }}
-            - name: GOLEM__COMPONENT_STORE__TYPE
-              value: "Local"
-            - name: GOLEM__COMPONENT_STORE__CONFIG__ROOT_PATH
-              value: "/golem/component"
-            - name: GOLEM__COMPONENT_STORE__CONFIG__OBJECT_PREFIX
-              value: ""
-{{- end }}
-{{- if eq .Values.componentStore.type "s3" }}
-            - name: GOLEM__COMPONENT_STORE__TYPE
-              value: "S3"
-            - name: GOLEM__COMPONENT_STORE__REGION
-              value: {{ .Values.componentStore.s3.region }}
-            - name: GOLEM__COMPONENT_STORE__CONFIG__OBJECT_PREFIX
-              value: {{ .Values.componentStore.s3.objectPrefix }}
-            - name: GOLEM__COMPONENT_STORE__CONFIG__BUCKET_NAME
-              value: {{ .Values.componentStore.s3.bucket }}
-            - name: GOLEM__BLOB_STORAGE__CONFIG__USE_MINIO_CREDENTIALS
-              value: {{ .Values.componentStore.s3.useMinioCredentials }}
-{{- end }}
-{{- if and (eq .Values.componentStore.type "s3") .Values.componentStore.s3.awsEndpointUrl }}
-            - name: GOLEM__BLOB_STORAGE__CONFIG__AWS_ENDPOINT_URL
-              value: {{ .Values.componentStore.s3.awsEndpointUrl }}
-{{- end }}
           ports:
             - name: http
               containerPort: {{ .Values.registryService.ports.http }}
@@ -490,18 +459,6 @@ spec:
             periodSeconds: 10
             failureThreshold: 5
             initialDelaySeconds: 20
-{{- if eq .Values.componentStore.type "pvc" }}
-          volumeMounts:
-            - name: golem-component-store-{{.Values.env}}
-              mountPath: /golem/component
-{{- end }}
-{{- if eq .Values.componentStore.type "pvc" }}
-      volumes:
-        - name: golem-component-store-{{.Values.env}}
-          persistentVolumeClaim:
-            claimName: golem-component-store-{{.Values.env}}
-{{- end }}
-
 ---
 
 apiVersion: apps/v1
@@ -529,7 +486,7 @@ spec:
 {{- end }}
       containers:
         - name: component-compilation-service-app-{{.Values.env}}
-          image: "{{ .Values.componentCompilationService.image.name }}:{{ .Values.componentCompilationService.image.version }}"
+          image: "{{ .Values.componentCompilationService.image.name }}:{{ .Values.componentCompilationService.image.tag }}"
           imagePullPolicy: {{.Values.componentCompilationService.imagePullPolicy}}
           env:
             - name: ENVIRONMENT
@@ -575,8 +532,24 @@ spec:
               value: {{ .Values.workerExecutorStore.s3.oplogPayloadBucket }}
             - name: GOLEM__BLOB_STORAGE__CONFIG__COMPRESSED_OPLOG_BUCKETS
               value: "{{ .Values.workerExecutorStore.s3.compressedOplogBuckets }}"
+            - name: GOLEM__BLOB_STORAGE__CONFIG__PLUGIN_WASM_FILES_BUCKET
+              value: "{{ .Values.workerExecutorStore.s3.pluginWasmFilesBucket }}"
+            - name: GOLEM__BLOB_STORAGE__CONFIG__INITIAL_COMPONENT_FILES_BUCKET
+              value: "{{ .Values.workerExecutorStore.s3.initialComponentsFilesBucket }}"
             - name: GOLEM__BLOB_STORAGE__CONFIG__USE_MINIO_CREDENTIALS
-              value: {{ .Values.workerExecutorStore.s3.useMinioCredentials }}
+              value: "{{ .Values.workerExecutorStore.s3.useMinioCredentials }}"
+            - name: GOLEM__BLOB_STORAGE__CONFIG__COMPONENTS_BUCKET
+              value: "{{ .Values.workerExecutorStore.s3.componentsBucket }}"
+            - name: GOLEM__BLOB_STORAGE__CONFIG__RETRIES__MAX_ATTEMPTS
+              value: "3"
+            - name: GOLEM__BLOB_STORAGE__CONFIG__RETRIES__MAX_DELAY
+              value: "1s"
+            - name: GOLEM__BLOB_STORAGE__CONFIG__RETRIES__MAX_JITTER_FACTOR
+              value: "0.15"
+            - name: GOLEM__BLOB_STORAGE__CONFIG__RETRIES__MIN_DELAY
+              value: "100ms"
+            - name: GOLEM__BLOB_STORAGE__CONFIG__RETRIES__MULTIPLIER
+              value: "3.0"
 {{- end }}
 {{- if and (eq .Values.workerExecutorStore.type "s3") .Values.workerExecutorStore.s3.awsEndpointUrl }}
             - name: GOLEM__BLOB_STORAGE__CONFIG__AWS_ENDPOINT_URL
@@ -611,7 +584,7 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: golem-debugging-service-{{.Values.env}}
+  name: deployment-golem-debugging-service-{{.Values.env}}
   labels:
     env: {{.Values.env}}
 spec:
@@ -633,7 +606,7 @@ spec:
       {{- end }}
       containers:
         - name: debugging-service
-          image: "{{ .Values.debuggingService.image.name }}:{{ .Values.debuggingService.image.version }}"
+          image: "{{ .Values.debuggingService.image.name }}:{{ .Values.debuggingService.image.tag }}"
           imagePullPolicy: {{ .Values.debuggingService.imagePullPolicy }}
           ports:
             - name: http

@@ -72,6 +72,15 @@ service/golem-postgres-postgresql
 service/golem-redis-master
 ```
 
+### Minio
+
+https://github.com/minio/minio/blob/master/helm/minio/README.md
+
+install
+```shell
+helm upgrade --install golem-minio --namespace golem --set resources.requests.memory=768Mi --set replicas=1 --set persistence.enabled=false --set mode=standalone --set "rootUser=minioadmin,rootPassword=minioadmin,buckets[0].name=compilation-cache,buckets[0].policy=none,buckets[0].purge=false,buckets[1].name=custom-data,buckets[1].policy=none,buckets[1].purge=false,buckets[2].name=oplog-payload,buckets[2].policy=none,buckets[2].purge=false,buckets[3].name=oplog-archive-1,buckets[3].policy=none,buckets[3].purge=false,buckets[4].name=component-store,buckets[4].policy=none,buckets[4].purge=false,buckets[5].name=initial-component-files,buckets[5].policy=none,buckets[5].purge=false,buckets[6].name=plugin-wasm-files,buckets[6].policy=none,buckets[6].purge=false" minio/minio
+```
+
 ### ngnix ingress
 
 install

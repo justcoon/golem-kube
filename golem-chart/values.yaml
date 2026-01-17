@@ -2,20 +2,22 @@
 shardManager:
   image:
     name: golemservices/golem-shard-manager
-    version: 1.4.2
+    tag: v1.4.2
   imagePullPolicy: Always
   ports:
     http: 8081
     grpc: 9001
   service:
     type: ClusterIP
+  worker:
+    healthCheckType: "K8s"
   redis:
     port: 6379
-    host: redis
+    host: golem-redis-master
     username: ""
     database: 0
     password:
-      type: none # secret or plain, or none if no auth
+      type: secret # secret or plain, or none if no auth
       plain: ""
       secret: # password from kubernetes secret
         name: golem-redis
@@ -26,7 +28,7 @@ shardManager:
 workerExecutor:
   image:
     name: golemservices/golem-worker-executor
-    version: 1.4.2
+    tag: v1.4.2
   imagePullPolicy: Always
   replica: 1
   ports:
@@ -51,7 +53,7 @@ workerExecutor:
 workerService:
   image:
     name: golemservices/golem-worker-service
-    version: 1.4.2
+    tag: v1.4.2
   imagePullPolicy: Always
   replica: 1
   ports:
@@ -62,28 +64,22 @@ workerService:
     type: ClusterIP
   redis:
     port: 6379
-    host: redis
+    host: golem-redis-master
     username: ""
     database: 0
     password:
-      type: none
+      type: secret # secret or plain, or none if no auth
       plain: ""
-      secret:
+      secret: # password from kubernetes secret
         name: golem-redis
         key: redis-password
-  registryService:
-    host: golem-registry-service
-    port: 9001
-  shardManager:
-    host: golem-shard-manager
-    port: 9001
 #  nodeSelector: # added, if defined, see: https://kubernetes.io/docs/tasks/configure-pod-container/assign-pods-nodes/
 
 # component compilation service configuration
 componentCompilationService:
   image:
     name: golemservices/golem-component-compilation-service
-    version: 1.4.2
+    tag: v1.4.2
   imagePullPolicy: Always
   replica: 1
   ports:
@@ -97,7 +93,7 @@ componentCompilationService:
 registryService:
   image:
     name: golemservices/registry-service
-    version: 1.4.2
+    tag: v1.4.2
   imagePullPolicy: Always
   replica: 1
   ports:
@@ -107,12 +103,16 @@ registryService:
     type: ClusterIP
   postgres:
     port: 5432
-    host: postgres
+    host: golem-postgres-postgresql
     database: golem_db
     username: golem_user
+    schema: golem_registry
     password:
-      type: plain
-      plain: "golem_password"
+      type: secret # secret or plain
+      plain: ""
+      secret: # password from kubernetes secret
+        name: golem-postgres-postgresql
+        key: password
   cors:
     originRegex: ""
   login:
@@ -127,7 +127,7 @@ registryService:
 debuggingService:
   image:
     name: golemservices/golem-debugging-service
-    version: 1.4.2
+    tag: v1.4.2
   imagePullPolicy: Always
   replica: 1
   ports:
@@ -136,13 +136,13 @@ debuggingService:
     type: ClusterIP
   redis:
     port: 6379
-    host: redis
+    host: golem-redis-master
     username: ""
     database: 0
     password:
-      type: none
+      type: secret # secret or plain, or none if no auth
       plain: ""
-      secret:
+      secret: # password from kubernetes secret
         name: golem-redis
         key: redis-password
 
@@ -157,7 +157,7 @@ env: default
 
 # component store configuration
 componentStore:
-  type: pvc # pvc or s3
+  type: s3 # pvc or s3
   pvc:
     storageClassName: hostpath
     storageSize: 5Gi
@@ -166,12 +166,12 @@ componentStore:
     objectPrefix: ""
     bucket: ""
     region: "us-east-1"
-    useMinioCredentials: false
-    awsEndpointUrl: ""
+    useMinioCredentials: true
+    awsEndpointUrl: "http://golem-minio:9000"
 
 # worker executor store configuration
 workerExecutorStore:
-  type: pvc # pvc or s3
+  type: s3 # pvc or s3
   pvc:
     storageClassName: hostpath
     storageSize: 5Gi
@@ -180,11 +180,14 @@ workerExecutorStore:
     objectPrefix: ""
     region: "us-east-1"
     compilationCacheBucket: "compilation-cache"
+    componentsBucket: "component-store"
+    initialComponentsFilesBucket: "initial-component-files"
+    pluginWasmFilesBucket: "plugin-wasm-files"
     customDataBucket: "custom-data"
     oplogPayloadBucket: "oplog-payload"
     compressedOplogBuckets: "[oplog-archive-1]"
-    useMinioCredentials: false
-    awsEndpointUrl: ""
+    useMinioCredentials: true
+    awsEndpointUrl: "http://golem-minio:9000"
 
 # API ingress
 ingress:
