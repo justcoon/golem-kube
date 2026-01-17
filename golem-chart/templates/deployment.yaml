@@ -25,7 +25,7 @@ spec:
 {{- end }}
       containers:
         - name: shard-manager-app-{{.Values.env}}
-          image: "{{ .Values.shardManager.image }}"
+          image: "{{ .Values.shardManager.image.name }}:{{ .Values.shardManager.image.version }}"
           imagePullPolicy: {{.Values.shardManager.imagePullPolicy}}
           env:
             - name: ENVIRONMENT
@@ -111,7 +111,7 @@ spec:
 {{- end }}
       containers:
         - name: worker-executor-app-{{.Values.env}}
-          image: "{{ .Values.workerExecutor.image }}"
+          image: "{{ .Values.workerExecutor.image.name }}:{{ .Values.workerExecutor.image.version }}"
           imagePullPolicy: {{.Values.workerExecutor.imagePullPolicy}}
           env:
             - name: ENVIRONMENT
@@ -262,7 +262,7 @@ spec:
 {{- end }}
       containers:
         - name: worker-service-app-{{.Values.env}}
-          image: "{{ .Values.workerService.image }}"
+          image: "{{ .Values.workerService.image.name }}:{{ .Values.workerService.image.version }}"
           imagePullPolicy: {{.Values.workerService.imagePullPolicy}}
           env:
             - name: ENVIRONMENT
@@ -392,7 +392,7 @@ spec:
 {{- end }}
       containers:
         - name: registry-service-app-{{.Values.env}}
-          image: "{{ .Values.registryService.image }}"
+          image: "{{ .Values.registryService.image.name }}:{{ .Values.registryService.image.version }}"
           imagePullPolicy: {{.Values.registryService.imagePullPolicy}}
           env:
             - name: ENVIRONMENT
@@ -403,6 +403,14 @@ spec:
               value: "info,h2=warn,hyper=warn,tower=warn"
             - name: GOLEM__TRACING__STDOUT__JSON
               value: "{{ .Values.logging.json }}"
+            - name: GOLEM__INITIAL_ACCOUNTS__ROOT__TOKEN
+              value: {{ .Values.registryService.initialAccounts.root.token }}
+            - name: GOLEM__INITIAL_ACCOUNTS__MARKETING__TOKEN
+              value: {{ .Values.registryService.initialAccounts.marketing.token }}
+            - name: GOLEM__LOGIN__TYPE
+              value: {{ .Values.registryService.login.type }}
+            - name: GOLEM__CORS_ORIGIN_REGEX
+              value: {{ .Values.registryService.cors.originRegex }}
             - name: GOLEM__DB__TYPE
               value: "Postgres"
             - name: GOLEM__DB__CONFIG__MAX_CONNECTIONS
@@ -521,7 +529,7 @@ spec:
 {{- end }}
       containers:
         - name: component-compilation-service-app-{{.Values.env}}
-          image: "{{ .Values.componentCompilationService.image }}"
+          image: "{{ .Values.componentCompilationService.image.name }}:{{ .Values.componentCompilationService.image.version }}"
           imagePullPolicy: {{.Values.componentCompilationService.imagePullPolicy}}
           env:
             - name: ENVIRONMENT
@@ -625,7 +633,7 @@ spec:
       {{- end }}
       containers:
         - name: debugging-service
-          image: {{ .Values.debuggingService.image }}
+          image: "{{ .Values.debuggingService.image.name }}:{{ .Values.debuggingService.image.version }}"
           imagePullPolicy: {{ .Values.debuggingService.imagePullPolicy }}
           ports:
             - name: http

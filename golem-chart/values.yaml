@@ -1,6 +1,8 @@
 # shard manager service configuration
 shardManager:
-  image: golemservices/golem-shard-manager:${GOLEM_IMAGES_VERSION:-latest}
+  image:
+    name: golemservices/golem-shard-manager
+    version: 1.4.2
   imagePullPolicy: Always
   ports:
     http: 8081
@@ -22,7 +24,9 @@ shardManager:
 
 # worker executor service configuration
 workerExecutor:
-  image: golemservices/golem-worker-executor:${GOLEM_IMAGES_VERSION:-latest}
+  image:
+    name: golemservices/golem-worker-executor
+    version: 1.4.2
   imagePullPolicy: Always
   replica: 1
   ports:
@@ -45,7 +49,9 @@ workerExecutor:
 
 # worker service configuration
 workerService:
-  image: golemservices/golem-worker-service:${GOLEM_IMAGES_VERSION:-latest}
+  image:
+    name: golemservices/golem-worker-service
+    version: 1.4.2
   imagePullPolicy: Always
   replica: 1
   ports:
@@ -75,7 +81,9 @@ workerService:
 
 # component compilation service configuration
 componentCompilationService:
-  image: golemservices/golem-component-compilation-service:${GOLEM_IMAGES_VERSION:-latest}
+  image:
+    name: golemservices/golem-component-compilation-service
+    version: 1.4.2
   imagePullPolicy: Always
   replica: 1
   ports:
@@ -87,7 +95,9 @@ componentCompilationService:
 
 # registry service configuration
 registryService:
-  image: golemservices/registry-service:${GOLEM_IMAGES_VERSION:-latest}
+  image:
+    name: golemservices/registry-service
+    version: 1.4.2
   imagePullPolicy: Always
   replica: 1
   ports:
@@ -103,10 +113,21 @@ registryService:
     password:
       type: plain
       plain: "golem_password"
+  cors:
+    originRegex: ""
+  login:
+    type: Disabled
+  initialAccounts:
+    root:
+      token: "n0AstqJ6cBgh9ob2BBT_h39t7B00I-8wSnBBix2lo-I"
+    marketing:
+      token: "evJ-8NPn7hIPBJ-htGgfZkk36PeA-UGAmT2iKasTFM4"
 
 # debugging service configuration
 debuggingService:
-  image: golemservices/golem-debugging-service:${GOLEM_IMAGES_VERSION:-latest}
+  image:
+    name: golemservices/golem-debugging-service
+    version: 1.4.2
   imagePullPolicy: Always
   replica: 1
   ports:
@@ -131,12 +152,6 @@ logging:
 
 # service account name  - used in all services, see: https://kubernetes.io/docs/concepts/security/service-accounts/
 serviceAccountName: golem-sa-default
-
-# environment variables for all services
-envVars:
-  GOLEM_IMAGES_VERSION: "latest"
-  ADMIN_TOKEN: ""
-  MARKETING_TOKEN: ""
 
 env: default
 
