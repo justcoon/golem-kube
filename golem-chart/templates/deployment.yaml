@@ -175,7 +175,7 @@ spec:
               value: "{{ .Values.logging.json }}"
             - name: GOLEM__HTTP_PORT
               value: "{{ .Values.workerExecutor.ports.http }}"
-            - name: GOLEM__PORT
+            - name: GOLEM__GRPC__PORT
               value: "{{ .Values.workerExecutor.ports.grpc }}"
             - name: GOLEM__PUBLIC_WORKER_API__HOST
               value: service-worker-service-{{.Values.env}}
@@ -334,7 +334,7 @@ spec:
               value: "{{ .Values.workerService.ports.requestHttp }}"
             - name: GOLEM__PORT
               value: "{{ .Values.workerService.ports.http }}"
-            - name: GOLEM__WORKER_GRPC_PORT
+            - name: GOLEM__GRPC__PORT
               value: "{{ .Values.workerService.ports.grpc }}"
           ports:
             - name: rhttp
@@ -438,7 +438,7 @@ spec:
 {{- end }}
             - name: GOLEM__HTTP_PORT
               value: "{{ .Values.registryService.ports.http }}"
-            - name: GOLEM__GRPC_PORT
+            - name: GOLEM__GRPC__PORT
               value: "{{ .Values.registryService.ports.grpc }}"
           ports:
             - name: http
@@ -507,7 +507,7 @@ spec:
               value: "{{ .Values.logging.json }}"
             - name: GOLEM__HTTP_PORT
               value: "{{ .Values.componentCompilationService.ports.http }}"
-            - name: GOLEM__GRPC_PORT
+            - name: GOLEM__GRPC__PORT
               value: "{{ .Values.componentCompilationService.ports.grpc }}"
             - name: GOLEM__COMPILED_COMPONENT_SERVICE__TYPE
               value: "Enabled"
