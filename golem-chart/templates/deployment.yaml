@@ -118,9 +118,9 @@ spec:
               value: {{.Values.env}}
             - name: REDIS_HOST
               value: {{ .Values.workerExecutor.redis.host }}
-            - name: GOLEM__REGISTRY_SERVICE__CONFIG__HOST
+            - name: GOLEM__REGISTRY_SERVICE__HOST
               value: service-registry-service-{{.Values.env}}
-            - name: GOLEM__REGISTRY_SERVICE__CONFIG__PORT
+            - name: GOLEM__REGISTRY_SERVICE__PORT
               value: "{{ .Values.registryService.ports.grpc }}"
             - name: GOLEM__REGISTRY_SERVICE__CONFIG__ACCESS_TOKEN
               value: "2A354594-7A63-4091-A46B-CC58D379F677"
@@ -224,6 +224,10 @@ spec:
               value: "100ms"
             - name: GOLEM__BLOB_STORAGE__CONFIG__RETRIES__MULTIPLIER
               value: "3.0"
+{{- end }}
+{{- if and (eq .Values.workerExecutorStore.type "s3") .Values.workerExecutorStore.s3.awsEndpointUrl }}
+            - name: GOLEM__BLOB_STORAGE__CONFIG__AWS_ENDPOINT_URL
+              value: {{ .Values.workerExecutorStore.s3.awsEndpointUrl }}
 {{- end }}
             - name: POD_NAME
               valueFrom:
@@ -418,11 +422,11 @@ spec:
               value: "{{ .Values.registryService.postgres.port }}"
             - name: GOLEM__DB__CONFIG__USERNAME
               value: {{ .Values.registryService.postgres.username }}
-            - name: GOLEM__COMPILATION__TYPE
+            - name: GOLEM__COMPONENT_COMPILATION__TYPE
               value: "Enabled"
-            - name: GOLEM__COMPILATION__CONFIG__HOST
+            - name: GOLEM__COMPONENT_COMPILATION__CONFIG__HOST
               value: service-component-compilation-service-{{.Values.env}}
-            - name: GOLEM__COMPILATION__CONFIG__PORT
+            - name: GOLEM__COMPONENT_COMPILATION__CONFIG__PORT
               value: "{{.Values.componentCompilationService.ports.grpc}}"
 
 {{- if eq .Values.registryService.postgres.password.type "plain" }}

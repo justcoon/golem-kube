@@ -1,18 +1,3 @@
-{{- if eq .Values.componentStore.type "pvc" }}
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: golem-component-store-{{.Values.env}}
-spec:
-  storageClassName: {{ .Values.componentStore.pvc.storageClassName }}
-  accessModes:
-    - {{ .Values.componentStore.pvc.accessMode }}
-  resources:
-    requests:
-      storage: {{ .Values.componentStore.pvc.storageSize }}
----
-{{- end }}
-
 {{- if eq .Values.workerExecutorStore.type "pvc" }}
 apiVersion: v1
 kind: PersistentVolumeClaim

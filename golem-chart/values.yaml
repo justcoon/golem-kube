@@ -155,19 +155,19 @@ serviceAccountName: golem-sa-default
 
 env: default
 
-# component store configuration
-componentStore:
-  type: s3 # pvc or s3
-  pvc:
-    storageClassName: hostpath
-    storageSize: 5Gi
-    accessMode: ReadWriteOnce
-  s3:
-    objectPrefix: ""
-    bucket: ""
-    region: "us-east-1"
-    useMinioCredentials: true
-    awsEndpointUrl: "http://golem-minio:9000"
+## component store configuration
+#componentStore:
+#  type: s3 # pvc or s3
+#  pvc:
+#    storageClassName: hostpath
+#    storageSize: 5Gi
+#    accessMode: ReadWriteOnce
+#  s3:
+#    objectPrefix: ""
+#    bucket: ""
+#    region: "us-east-1"
+#    useMinioCredentials: true
+#    awsEndpointUrl: "http://golem-minio:9000"
 
 # worker executor store configuration
 workerExecutorStore:
