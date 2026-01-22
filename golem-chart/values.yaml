@@ -6,7 +6,7 @@ shardManager:
   imagePullPolicy: Always
   ports:
     http: 8081
-    grpc: 9001
+    grpc: 9002
   service:
     type: ClusterIP
   worker:
@@ -32,8 +32,8 @@ workerExecutor:
   imagePullPolicy: Always
   replica: 1
   ports:
-    http: 8080
-    grpc: 9000
+    http: 8082
+    grpc: 9003
   service:
     type: ClusterIP
   redis:
@@ -84,7 +84,7 @@ componentCompilationService:
   replica: 1
   ports:
     http: 8084
-    grpc: 9091
+    grpc: 9010
   service:
     type: ClusterIP
 #  nodeSelector: # added, if defined, see: https://kubernetes.io/docs/tasks/configure-pod-container/assign-pods-nodes/
@@ -97,8 +97,8 @@ registryService:
   imagePullPolicy: Always
   replica: 1
   ports:
-    http: 9000
-    grpc: 9001
+    http: 8083
+    grpc: 9008
   service:
     type: ClusterIP
   postgres:
@@ -131,7 +131,7 @@ debuggingService:
   imagePullPolicy: Always
   replica: 1
   ports:
-    http: 9002
+    http: 8086
   service:
     type: ClusterIP
   redis:
