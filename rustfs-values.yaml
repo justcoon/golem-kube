@@ -1,0 +1,58 @@
+# Authentication credentials
+auth:
+  accessKey: "minioadmin"
+  secretKey: "minioadmin"
+
+secret:
+  rustfs:
+    access_key: "minioadmin"
+    secret_key: "minioadmin"
+
+# Basic configuration
+#config:
+#  logLevel: "info"
+#  rustfs:
+##    domains: "golem-rustfs.golem.svc.cluster.local:9000"
+#    domains: "golem-rustfs:9000"
+
+
+config:
+  rustfs:
+#    # Examples
+#    # volumes: "/data/rustfs0,/data/rustfs1,/data/rustfs2,/data/rustfs3"
+#    # volumes: "http://rustfs-{0...3}.rustfs-headless:9000/data/rustfs{0...3}"
+#    volumes: ""
+#    address: ":9000"
+#    console_enable: "true"
+#    console_address: ":9001"
+#    log_level: "info"
+#    region: "us-east-1"
+#    obs_log_directory: "/logs"
+#    obs_environment: "development"
+#    # Optionally enable support for virtual-hosted-style requests.
+#    # See more information: https://docs.rustfs.com/integration/virtual.html
+    domains: "golem-rustfs-svc:9000"
+
+mode:
+  standalone:
+    enabled: true
+  distributed:
+    enabled: false
+
+# Data persistence with 10Gi storage
+dataPersistence:
+  size: 10Gi
+
+# Logs persistence
+logsPersistence:
+  size: 5Gi
+
+replicaCount: 1
+
+# Resource limits
+resources:
+  limits:
+    memory: 2Gi
+  requests:
+    cpu: 500m
+    memory: 1Gi

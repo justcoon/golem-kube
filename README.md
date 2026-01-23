@@ -85,6 +85,24 @@ helm upgrade --install golem-minio --namespace golem --set resources.requests.me
 kubectl port-forward service/golem-minio-console 9001 --namespace golem
 ```
 
+### Rustfs
+
+https://artifacthub.io/packages/helm/rustfs/rustfs
+https://github.com/rustfs/helm
+
+helm repo add rustfs https://charts.rustfs.com
+
+install
+```shell
+
+#helm upgrade --install -n golem  golem-rustfs oci://registry-1.docker.io/cloudpirates/rustfs -f rustfs-values.yaml
+helm upgrade --install -n golem  golem-rustfs rustfs/rustfs  -f rustfs-values.yaml
+```
+
+```shell
+AWS_ACCESS_KEY_ID=minioadmin AWS_SECRET_ACCESS_KEY=minioadmin AWS_ENDPOINT_URL=http://localhost:9000 ./create_buckets.sh
+```
+
 ### ngnix ingress
 
 install
